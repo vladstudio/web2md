@@ -1,0 +1,5 @@
+*.bun-build
+node_modules
+test
+bun.lock
+web2md
