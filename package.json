@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "bun run src/index.ts",
     "build": "bun build --compile ./src/index.ts --outfile web2md --external electron --external chromium-bidi",
-    "test": "bun test"
+    "test": "bun test",
+    "clean": "rm -f *.bun-build"
   },
   "dependencies": {
     "playwright": "^1.40.0",
