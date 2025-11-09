@@ -46,6 +46,7 @@ async function main() {
     .option('-l, --limit <number>', 'Maximum pages to crawl', parseInt, 10)
     .option('-1, --single', 'Output to single file', false)
     .option('-o, --output <path>', 'Output path (defaults to URL-based name)')
+    .showHelpAfterError()
     .parse();
 
   const startUrl = program.args[0];
