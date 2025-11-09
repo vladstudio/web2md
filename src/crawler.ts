@@ -105,6 +105,13 @@ export class WebCrawler {
       // Extract title
       const title = await page.title() || 'Untitled';
 
+      // Extract links BEFORE removing nav elements
+      const links = await page.$$eval('a[href]', (anchors) =>
+        anchors
+          .map(a => (a as HTMLAnchorElement).href)
+          .filter(href => href && !href.startsWith('#'))
+      );
+
       // Remove unwanted elements
       for (const selector of CONFIG.REMOVE_SELECTORS) {
         await page.evaluate((sel) => {
@@ -114,13 +121,6 @@ export class WebCrawler {
 
       // Get HTML content
       const html = await page.content();
-
-      // Extract links
-      const links = await page.$$eval('a[href]', (anchors) =>
-        anchors
-          .map(a => (a as HTMLAnchorElement).href)
-          .filter(href => href && !href.startsWith('#'))
-      );
 
       return {
         url,
