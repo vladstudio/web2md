@@ -4,6 +4,7 @@ export interface CLIOptions {
   limit?: number;
   single?: boolean;
   output?: string;
+  clean?: string;
 }
 
 export interface CrawlResult {

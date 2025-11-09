@@ -5,6 +5,7 @@ import { join, resolve, dirname } from 'path';
 import { CrawlResult, CLIOptions, PageMetadata } from './types';
 import { sanitizeFilename, isPathSafe } from './utils';
 import { CONFIG } from './config';
+import { cleanMarkdown } from './llm-cleaner';
 
 export class MarkdownConverter {
   private turndown: TurndownService;
@@ -56,15 +57,15 @@ export class MarkdownConverter {
     });
   }
 
-  processResults(results: CrawlResult[], options: CLIOptions) {
+  async processResults(results: CrawlResult[], options: CLIOptions) {
     if (options.single) {
-      this.saveAsSingleFile(results, options);
+      await this.saveAsSingleFile(results, options);
     } else {
-      this.saveAsMultipleFiles(results, options);
+      await this.saveAsMultipleFiles(results, options);
     }
   }
 
-  private saveAsSingleFile(results: CrawlResult[], options: CLIOptions) {
+  private async saveAsSingleFile(results: CrawlResult[], options: CLIOptions) {
     const outputPath = options.output!.endsWith('.md')
       ? options.output!
       : `${options.output!}.md`;
@@ -73,21 +74,21 @@ export class MarkdownConverter {
     const dir = dirname(outputPath);
     mkdirSync(dir, { recursive: true });
 
-    const pages = results.map(result => {
-      const markdown = this.convertToMarkdown(result);
+    const pages = await Promise.all(results.map(async result => {
+      const markdown = await this.convertToMarkdown(result, options);
       const metadata = this.createMetadata(result);
       return `${metadata}\n\n${markdown}`;
-    });
+    }));
 
     const combinedMarkdown = pages.join('\n\n---\n\n');
     writeFileSync(outputPath, combinedMarkdown);
   }
 
-  private saveAsMultipleFiles(results: CrawlResult[], options: CLIOptions) {
+  private async saveAsMultipleFiles(results: CrawlResult[], options: CLIOptions) {
     const baseDir = resolve(options.output!);
 
     for (const result of results) {
-      const markdown = this.convertToMarkdown(result);
+      const markdown = await this.convertToMarkdown(result, options);
       const metadata = this.createMetadata(result);
       const fullContent = `${metadata}\n\n${markdown}`;
 
@@ -104,7 +105,7 @@ export class MarkdownConverter {
     }
   }
 
-  private convertToMarkdown(result: CrawlResult): string {
+  private async convertToMarkdown(result: CrawlResult, options: CLIOptions): Promise<string> {
     // Clean HTML before conversion
     const cleanedHtml = this.cleanHtml(result.html);
 
@@ -113,6 +114,11 @@ export class MarkdownConverter {
 
     // Post-process markdown
     markdown = this.postProcessMarkdown(markdown);
+
+    // Clean with LLM if requested
+    if (options.clean) {
+      markdown = await cleanMarkdown(markdown, options.clean);
+    }
 
     return markdown;
   }

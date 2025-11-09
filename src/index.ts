@@ -46,6 +46,10 @@ async function main() {
     .option('-l, --limit <number>', 'Maximum pages to crawl', parseInt, 10)
     .option('-1, --single', 'Output to single file', false)
     .option('-o, --output <path>', 'Output path (defaults to URL-based name)')
+    .option('-c, --clean <provider:model>', `Clean markdown with LLM
+                  Anthropic: claude-3-5-haiku-20241022, claude-3-haiku-20240307, claude-haiku-4-5
+                  Gemini: gemini-2.5-flash-lite, gemini-2.0-flash-lite, gemini-1.5-flash
+                  OpenAI: gpt-4o-mini, gpt-4.1-nano, gpt-3.5-turbo`)
     .showHelpAfterError()
     .parse();
 
