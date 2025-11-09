@@ -109,7 +109,7 @@ async function main() {
 
     // Convert and save
     const converter = new MarkdownConverter();
-    await converter.processResults(results, options);
+    await converter.processResults(results, options, spinner);
 
     // Cleanup
     await browser.close();

@@ -6,6 +6,7 @@ import { CrawlResult, CLIOptions, PageMetadata } from './types';
 import { sanitizeFilename, isPathSafe } from './utils';
 import { CONFIG } from './config';
 import { cleanMarkdown } from './llm-cleaner';
+import type { Ora } from 'ora';
 
 export class MarkdownConverter {
   private turndown: TurndownService;
@@ -57,15 +58,15 @@ export class MarkdownConverter {
     });
   }
 
-  async processResults(results: CrawlResult[], options: CLIOptions) {
+  async processResults(results: CrawlResult[], options: CLIOptions, spinner?: Ora) {
     if (options.single) {
-      await this.saveAsSingleFile(results, options);
+      await this.saveAsSingleFile(results, options, spinner);
     } else {
-      await this.saveAsMultipleFiles(results, options);
+      await this.saveAsMultipleFiles(results, options, spinner);
     }
   }
 
-  private async saveAsSingleFile(results: CrawlResult[], options: CLIOptions) {
+  private async saveAsSingleFile(results: CrawlResult[], options: CLIOptions, spinner?: Ora) {
     const outputPath = options.output!.endsWith('.md')
       ? options.output!
       : `${options.output!}.md`;
@@ -74,26 +75,38 @@ export class MarkdownConverter {
     const dir = dirname(outputPath);
     mkdirSync(dir, { recursive: true });
 
-    const pages = await Promise.all(results.map(async result => {
+    const pages: string[] = [];
+    for (let i = 0; i < results.length; i++) {
+      const result = results[i];
+      const filename = sanitizeFilename(result.url);
+      if (spinner) {
+        spinner.text = `Converting to Markdown: ${filename} (${i + 1}/${results.length})`;
+      }
+
       const markdown = await this.convertToMarkdown(result, options);
       const metadata = this.createMetadata(result);
-      return `${metadata}\n\n${markdown}`;
-    }));
+      pages.push(`${metadata}\n\n${markdown}`);
+    }
 
     const combinedMarkdown = pages.join('\n\n---\n\n');
     writeFileSync(outputPath, combinedMarkdown);
   }
 
-  private async saveAsMultipleFiles(results: CrawlResult[], options: CLIOptions) {
+  private async saveAsMultipleFiles(results: CrawlResult[], options: CLIOptions, spinner?: Ora) {
     const baseDir = resolve(options.output!);
 
-    for (const result of results) {
+    for (let i = 0; i < results.length; i++) {
+      const result = results[i];
+      const filename = sanitizeFilename(result.url);
+      if (spinner) {
+        spinner.text = `Converting to Markdown: ${filename} (${i + 1}/${results.length})`;
+      }
+
       const markdown = await this.convertToMarkdown(result, options);
       const metadata = this.createMetadata(result);
       const fullContent = `${metadata}\n\n${markdown}`;
 
-      const filename = sanitizeFilename(result.url) + '.md';
-      const outputPath = join(baseDir, filename);
+      const outputPath = join(baseDir, filename + '.md');
 
       // Safety check - ensure we're writing inside the output directory
       if (!outputPath.startsWith(baseDir)) {
