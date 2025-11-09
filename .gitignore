@@ -1,5 +1,5 @@
 *.bun-build
 node_modules
-test
+test*
 bun.lock
 web2md

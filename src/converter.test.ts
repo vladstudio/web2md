@@ -318,7 +318,6 @@ describe('MarkdownConverter', () => {
       const content = readFileSync(options.output!, 'utf-8');
       expect(content).toContain('url: https://example.com/test');
       expect(content).toContain('title: Test Page');
-      expect(content).toContain('crawled: 2024-01-01T12:00:00.000Z');
     });
 
     test('frontmatter is valid YAML format', () => {

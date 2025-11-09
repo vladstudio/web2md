@@ -151,7 +151,6 @@ export class MarkdownConverter {
     return `---
 url: ${metadata.url}
 title: ${metadata.title}
-crawled: ${metadata.crawledAt}
 ---
 
 # ${metadata.title}`;

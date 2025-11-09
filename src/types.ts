@@ -1,6 +1,6 @@
 export interface CLIOptions {
-  include?: string;
-  exclude?: string;
+  include?: string[];
+  exclude?: string[];
   limit?: number;
   single?: boolean;
   output?: string;

@@ -36,12 +36,12 @@ export function shouldCrawlUrl(
   options: CLIOptions
 ): boolean {
   // Check include pattern
-  if (options.include && !url.includes(options.include)) {
+  if (options.include?.length && !options.include.some(p => url.includes(p))) {
     return false;
   }
 
   // Check exclude pattern
-  if (options.exclude && url.includes(options.exclude)) {
+  if (options.exclude?.some(p => url.includes(p))) {
     return false;
   }
 
